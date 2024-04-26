@@ -47,15 +47,33 @@ class NullFilter(Filter):
         return get_driver_name(
             participant.driverId, du.to_string(participant.name))
 
-    def filter_lap_data(self, packet):
-        """
-        Process lap data packets.
-        """
-        driver_id = packet.playerCarIndex  # Corrected attribute access
-        lap_number = packet.currentLapNum
-        lap_time = packet.lastLapTime
-
-        if driver_id not in self.lap_history:
-            self.lap_history[driver_id] = []
-
-        self.lap_history[driver_id].append((lap_number, lap_time))
+    def filter_event(self, packet: EventPacket):
+        event_code = du.to_string(packet.eventStringCode)
+        if event_code == EventStringCode.SESSION_START.value:
+            print_with_session_timestamp(
+                packet.sessionTime, 'Race Start Imminent.')
+        elif event_code == EventStringCode.SESSION_END.value:
+            print_with_session_timestamp(
+                packet.sessionTime, 'Race Over')
+            self._reset()
+        elif event_code == EventStringCode.FASTEST_LAP.value:
+            data = cast(FastestLap, packet.eventDetails.FastestLap)
+            driver_name = self._get_driver_name(data.vehicleIdx)
+            print_with_session_timestamp(
+                packet.sessionTime,
+                f'{driver_name} has set the fastest lap time of \
+{str(datetime.timedelta(seconds=data.lapTime))[3:-3]}.')
+        elif event_code == EventStringCode.DRIVE_THROUGH_SERVED.value:
+            data = cast(DriveThroughPenaltyServed,
+                        packet.eventDetails.DriveThroughPenaltyServed)
+            driver_name = self._get_driver_name(data.vehicleIdx)
+            print_with_session_timestamp(
+                packet.sessionTime,
+                f'{driver_name} has served a drive through penalty.')
+        elif event_code == EventStringCode.STOP_GO_SERVED.value:
+            data = cast(StopGoPenaltyServed,
+                        packet.eventDetails.StopGoPenaltyServed)
+            driver_name = self._get_driver_name(data.vehicleIdx)
+            print_with_session_timestamp(
+                packet.sessionTime,
+                f'{driver_name} has served a stop-and-go penalty.')
