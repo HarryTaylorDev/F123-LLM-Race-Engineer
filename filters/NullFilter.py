@@ -7,7 +7,7 @@ import logging
 import utilities.data as du
 
 from filters.Filter import Filter
-from packets.packets import (Packet, SessionHistoryPacket,SessionPacket, ParticipantsPacket)
+from packets.packets import (SessionHistoryPacket, EventPacket, Packet, PacketId, ParticipantsPacket, SessionPacket)
 
 from constants.constants import (
     DRIVER_NAMES, EventStringCode, NULL_BYTE_VALUE, PenaltyId, SESSION_TEXT,
@@ -77,3 +77,12 @@ class NullFilter(Filter):
             print_with_session_timestamp(
                 packet.sessionTime,
                 f'{driver_name} has served a stop-and-go penalty.')
+
+    def filter_participants(self, packet: ParticipantsPacket):
+        if self.participants is not None:
+            return
+        self.participants = packet.participants
+
+    def _reset(self):
+        self.participants = None
+        self.session_displayed = False
