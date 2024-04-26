@@ -59,15 +59,3 @@ class NullFilter(Filter):
             self.lap_history[driver_id] = []
 
         self.lap_history[driver_id].append((lap_number, lap_time))
-
-    def cleanup(self):
-        """
-        Cleanup method (optional).
-        """
-        # Save or process lap history data before closing the application
-        print("Lap history recorded:", self.lap_history)
-
-if __name__ == "__main__":
-    # Example usage
-    filter_instance = LapHistoryFilter()
-    filter_instance.run()
