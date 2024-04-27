@@ -70,7 +70,7 @@ def send_to_ollama(events):
         to_speak = str(ollama_response["message"]["content"])
         to_speak = to_speak.replace('"', '')
         to_speak = to_speak.replace('Driver Comms:', '')
-        if not to_speak == "":
+        if any(c.isalpha() for c in to_speak):
             to_type = "\nCOMMS: " + to_speak + "\n"
             logging.info(to_type)
 
@@ -91,7 +91,7 @@ def send_to_ollama_system(events):
         to_speak = str(ollama_response["message"]["content"])
         to_speak = to_speak.replace('"', '')
         to_speak = to_speak.replace('Driver Comms:', '')
-        if not to_speak == "":
+        if any(c.isalpha() for c in to_speak):
             to_type = "\nCOMMS: " + to_speak + "\n"
             logging.info(to_type)
 
