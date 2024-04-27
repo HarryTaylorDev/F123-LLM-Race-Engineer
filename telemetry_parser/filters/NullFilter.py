@@ -40,7 +40,8 @@ contents = engineer_training.read()
 engineer_preamble = str(contents)
 
 from gtts import gTTS
-from io import BytesIO
+import os
+import playsound
 
 import requests
 import json
@@ -58,20 +59,26 @@ data = {
     "stream": False
 }
 
+#General Advice, send_to_ollama() for events, send_to_ollama_system() for race information
+
 #Send events and recieve response
 def send_to_ollama(events):
     data["messages"].append({"role": "user", "content": events})
     response = requests.post(url, headers=headers, json=data)
     try:
         ollama_response = response.json()
-        if not str(ollama_response["message"]["content"]) == "":
-            to_say = "\nCOMMS: " + str(ollama_response["message"]["content"])+ "\n"
-            to_speak = str(ollama_response["message"]["content"])
-            logging.info(to_say)
+        to_speak = str(ollama_response["message"]["content"])
+        to_speak = to_speak.replace('"', '')
+        to_speak = to_speak.replace('Driver Comms:', '')
+        if not to_speak == "":
+            to_type = "\nCOMMS: " + to_speak + "\n"
+            logging.info(to_type)
 
-            mp3_fp = BytesIO()
-            tts = gTTS(to_speak, lang='en')
-            tts.write_to_fp(mp3_fp)
+            tts = gTTS(text=to_speak, lang='en')
+            filename = "temp_comms.mp3"
+            tts.save(filename)
+            playsound.playsound(filename)
+            os.remove(filename)
 
     except requests.RequestException as e:
         logging.info(f"Error sending events to Ollama: {e}")
@@ -81,14 +88,18 @@ def send_to_ollama_system(events):
     response = requests.post(url, headers=headers, json=data)
     try:
         ollama_response = response.json()
-        if not str(ollama_response["message"]["content"]) == "":
-            to_say = "\nCOMMS: " + str(ollama_response["message"]["content"])+ "\n"
-            to_speak = str(ollama_response["message"]["content"])
-            logging.info(to_say)
+        to_speak = str(ollama_response["message"]["content"])
+        to_speak = to_speak.replace('"', '')
+        to_speak = to_speak.replace('Driver Comms:', '')
+        if not to_speak == "":
+            to_type = "\nCOMMS: " + to_speak + "\n"
+            logging.info(to_type)
 
-            mp3_fp = BytesIO()
-            tts = gTTS(to_speak, lang='en')
-            tts.write_to_fp(mp3_fp)
+            tts = gTTS(text=to_speak, lang='en')
+            filename = "temp_comms.mp3"
+            tts.save(filename)
+            playsound.playsound(filename)
+            os.remove(filename)
 
     except requests.RequestException as e:
         logging.info(f"Error sending events to Ollama: {e}")
