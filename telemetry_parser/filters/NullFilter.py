@@ -71,7 +71,7 @@ def send_to_ollama(events):
         to_speak = to_speak.replace('"', '')
         to_speak = to_speak.replace('Driver Comms:', '')
         if any(c.isalpha() for c in to_speak):
-            to_type = "\nCOMMS: " + to_speak + "\n"
+            to_type = "\nCOMMS (engineer): " + to_speak + "\n"
             logging.info(to_type)
 
             tts = gTTS(text=to_speak, lang='en')
@@ -94,7 +94,7 @@ def send_to_ollama_system(events):
         to_speak = to_speak.replace('"', '')
         to_speak = to_speak.replace('Driver Comms:', '')
         if any(c.isalpha() for c in to_speak):
-            to_type = "\nCOMMS: " + to_speak + "\n"
+            to_type = "\nCOMMS (systemengineer): " + to_speak + "\n"
             logging.info(to_type)
 
             tts = gTTS(text=to_speak, lang='en')
