@@ -80,11 +80,13 @@ def send_to_ollama(events):
             playsound.playsound(filename)
             os.remove(filename)
 
+            #issue - if a new sound tries to play before the old one is finnished it breaks, need solution
+
     except requests.RequestException as e:
         logging.info(f"Error sending events to Ollama: {e}")
 
 def send_to_ollama_system(events):
-    data["messages"].append({"role": "system", "content": events})
+    data["messages"].append({"role": "system", "content": "RI: This is engineer information and should be kept to the engineer unless the driver asks about it." + events})
     response = requests.post(url, headers=headers, json=data)
     try:
         ollama_response = response.json()
@@ -256,9 +258,7 @@ class NullFilter(Filter):
 
     def filter_event(self, packet: EventPacket):
         event_code = du.to_string(packet.eventStringCode)
-        if event_code == EventStringCode.SESSION_START.value:
-            send_to_ollama('RI: Race Start.')
-        elif event_code == EventStringCode.SESSION_END.value:
+        if event_code == EventStringCode.SESSION_END.value:
             send_to_ollama('RI: Race Over')
             self._reset()
         elif event_code == EventStringCode.FASTEST_LAP.value:
@@ -315,3 +315,4 @@ class NullFilter(Filter):
     def _reset(self):
         self.participants = None
         self.session_displayed = False
+
