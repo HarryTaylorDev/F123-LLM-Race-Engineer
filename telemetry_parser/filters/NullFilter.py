@@ -94,11 +94,10 @@ def send_to_ollama(events):
             tts = gTTS(text=to_speak, lang='en')
             filename = "temp_comms.mp3"
             tts.save(filename)
-            print("<debug> VC Saved", time.time() - start) #debug
             time.sleep(0.5)
-            print("<debug> VC Playback Begins", time.time() - start) #debug
+            playback_began = time.time() - start #debug
             playsound.playsound(filename)
-            print("<debug> VC Playback Ends", time.time() - start, "\n") #debug
+            print("<debug> VC Playback began after:", playback_began, "Dur:", time.time() - start - playback_began, "\n") #debug
             os.remove(filename)
     except requests.RequestException as e:
         logging.info(f"Error sending events to Ollama: {e}")
@@ -107,7 +106,7 @@ def send_to_ollama(events):
 
 def send_to_ollama_system(events):
     globals()["recieving"] = True
-    data["messages"].append({"role": "system", "content": "RI: This is engineer information and should be kept to the engineer unless the driver asks about it." + events})
+    data["messages"].append({"role": "system", "content": "RI: " + events})
     response = requests.post(url, headers=headers, json=data)
     try:
         ollama_response = response.json()
