@@ -2,7 +2,7 @@
 import socket                
 
 s = socket.socket()          
-port = 12345     # Reserve a port on your computer...in our case it is 12345, but it can be anything
+port = 12345
 s.bind(('', port))         
 s.listen(5)    # Put the socket into listening mode    
 

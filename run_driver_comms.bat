@@ -1,4 +1,2 @@
-python driver_comms.py
-
-
+python ./driver_comms/driver_comms.py
 cmd /k
