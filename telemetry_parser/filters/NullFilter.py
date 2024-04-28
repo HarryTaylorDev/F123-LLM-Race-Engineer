@@ -61,8 +61,12 @@ data = {
 
 #General Advice, send_to_ollama() for events, send_to_ollama_system() for race information
 
+global recieving
+recieving = False
+
 #Send events and recieve response
 def send_to_ollama(events):
+    globals()["recieving"] = True
     data["messages"].append({"role": "user", "content": events})
     response = requests.post(url, headers=headers, json=data)
     try:
@@ -84,8 +88,10 @@ def send_to_ollama(events):
 
     except requests.RequestException as e:
         logging.info(f"Error sending events to Ollama: {e}")
+    globals()["recieving"] = False
 
 def send_to_ollama_system(events):
+    globals()["recieving"] = True
     data["messages"].append({"role": "system", "content": "RI: This is engineer information and should be kept to the engineer unless the driver asks about it." + events})
     response = requests.post(url, headers=headers, json=data)
     try:
@@ -94,7 +100,7 @@ def send_to_ollama_system(events):
         to_speak = to_speak.replace('"', '')
         to_speak = to_speak.replace('Driver Comms:', '')
         if any(c.isalpha() for c in to_speak):
-            to_type = "\nCOMMS (systemengineer): " + to_speak + "\n"
+            to_type = "\nCOMMS (systems): " + to_speak + "\n"
             logging.info(to_type)
 
             tts = gTTS(text=to_speak, lang='en')
@@ -105,6 +111,24 @@ def send_to_ollama_system(events):
 
     except requests.RequestException as e:
         logging.info(f"Error sending events to Ollama: {e}")
+    globals()["recieving"] = False
+
+import socket
+import threading
+def listen():
+    while True:
+        s = socket.socket()
+        port = 12345
+        s.connect(('127.0.0.1', port))   # Connect to the server on local computer
+        message = s.recv(1024).decode('utf-8')
+        print("COMMS (driver): ", message)
+        send_to_ollama(message)   # Receive data from the server 
+        s.close()
+dc_thread = threading.Thread(target=listen)
+dc_thread.start()
+
+
+
 #-----------------------------------------------------------------------------------------------------------------------------
 
 
@@ -242,11 +266,11 @@ class NullFilter(Filter):
         self.data = {}
         self.session_displayed = False
         self.participants: Optional[Array[ParticipantsData]] = None
-        send_to_ollama("RI: Engineer Confirm Readiness with the word 'Ready'.")
+        send_to_ollama("RI: Engineer Confirm Readiness with the word 'Ready'.")   
 
     def _get_driver_name(self, vehicle_index: int):
         participant = cast(Array[ParticipantsData],
-                           self.participants)[vehicle_index]
+                        self.participants)[vehicle_index]
         return get_driver_name(
             participant.driverId, du.to_string(participant.name))
     
@@ -299,7 +323,7 @@ class NullFilter(Filter):
                 return
             other_vehicle = data.otherVehicleIdx
             second_driver = (self._get_driver_name(other_vehicle)
-                             if other_vehicle != NULL_BYTE_VALUE else None)
+                            if other_vehicle != NULL_BYTE_VALUE else None)
             time = data.time if data.time != NULL_BYTE_VALUE else None
             p_string = create_penalty_string(
                 data.penaltyType, data.infringementType,
@@ -315,4 +339,3 @@ class NullFilter(Filter):
     def _reset(self):
         self.participants = None
         self.session_displayed = False
-
