@@ -65,24 +65,28 @@ data = {
 global recieving
 recieving = False
 
-#Send events and recieve response
+#Send events and recieve response (response time ~ 0.04s)
 def send_to_ollama(events):
+    start = time.time() #debug
     globals()["recieving"] = True
     data["messages"].append({"role": "user", "content": events})
-    response = requests.post(url, headers=headers, json=data)
+    response = requests.post(url, headers=headers, json=data, timeout=3) #response takes 2s for some reason, ollama says total responsetime was 0.04
     try:
         ollama_response = response.json()
         to_speak = str(ollama_response["message"]["content"])
         to_speak = to_speak.replace('"', '')
         to_speak = to_speak.replace('Driver Comms:', '')
         if any(c.isalpha() for c in to_speak):
-            to_type = "\nCOMMS (engineer): " + to_speak + "\n"
+            to_type = "\nCOMMS (engineer): " + to_speak  + "\n"
             logging.info(to_type)
             tts = gTTS(text=to_speak, lang='en')
             filename = "temp_comms.mp3"
             tts.save(filename)
-            time.sleep(1)
+            print("<debug> VC Saved", time.time() - start) #debug
+            time.sleep(0.5)
+            print("<debug> VC Playback Begins", time.time() - start) #debug
             playsound.playsound(filename)
+            print("<debug> VC Playback Ends", time.time() - start, "\n") #debug
             os.remove(filename)
     except requests.RequestException as e:
         logging.info(f"Error sending events to Ollama: {e}")

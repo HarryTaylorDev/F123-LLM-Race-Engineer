@@ -5,6 +5,7 @@ s = socket.socket()
 port = 12345
 s.bind(('', port))         
 s.listen(5)    # Put the socket into listening mode    
+print("Listening for engineer client response...")
 
 conn_established = False
 
@@ -14,6 +15,6 @@ while True:
     print ('Engineer Connected: ', addr)
     conn_established = True  
   
-  DC = input("Driver Comms: ")
+  DC = input("Driver Comms Input: ")
   c.send(DC.encode('utf-8'))   # Send a message to the client
   
