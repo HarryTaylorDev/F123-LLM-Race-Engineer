@@ -46,6 +46,18 @@ import time
 
 import requests
 import json
+
+class bcolours:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 url = "http://localhost:11434/api/chat"
 headers = {
     "Content-Type": "application/json"
@@ -70,7 +82,7 @@ def send_to_ollama(events):
     start = time.time() #debug
     globals()["recieving"] = True
     data["messages"].append({"role": "user", "content": events})
-    response = requests.post(url, headers=headers, json=data, timeout=3) #response takes 2s for some reason, ollama says total responsetime was 0.04
+    response = requests.post(url, headers=headers, json=data) #response takes 2s for some reason, ollama says total responsetime was 0.04
     try:
         ollama_response = response.json()
         to_speak = str(ollama_response["message"]["content"])
@@ -78,7 +90,7 @@ def send_to_ollama(events):
         to_speak = to_speak.replace('Driver Comms:', '')
         if any(c.isalpha() for c in to_speak):
             to_type = "\nCOMMS (engineer): " + to_speak  + "\n"
-            logging.info(to_type)
+            print(bcolours.OKGREEN+to_type+bcolours.WARNING)
             tts = gTTS(text=to_speak, lang='en')
             filename = "temp_comms.mp3"
             tts.save(filename)
@@ -103,8 +115,8 @@ def send_to_ollama_system(events):
         to_speak = to_speak.replace('"', '')
         to_speak = to_speak.replace('Driver Comms:', '')
         if any(c.isalpha() for c in to_speak):
-            to_type = "\nCOMMS (systems): " + to_speak + "\n"
-            logging.info(to_type)
+            to_type = "\nCOMMS (system): " + to_speak + "\n"
+            print(bcolours.OKGREEN + to_type + bcolours.WARNING)
             tts = gTTS(text=to_speak, lang='en')
             filename = "temp_comms.mp3"
             tts.save(filename)
@@ -124,9 +136,16 @@ def listen():
         port = 12345
         s.connect(('127.0.0.1', port))   # Connect to the server 
         message = s.recv(1024).decode('utf-8')
-        print("COMMS (driver): ", message)
+        
         if not globals()["recieving"]:
-            send_to_ollama("DC: " + message)   # Receive data from the server 
+            if any(c=="_" for c in message):
+                print(bcolours.WARNING + "COMMS (system): ", message,"\n", bcolours.WARNING)
+                send_to_ollama_system("RI: " + message) #if includes underscore then send as RI
+                
+            else:
+                print(bcolours.OKCYAN + "COMMS (driver): ", message, bcolours.WARNING)
+                send_to_ollama("DC: " + message)   # Receive data from the server 
+                
         s.close()
 dc_thread = threading.Thread(target=listen)
 dc_thread.start()
@@ -268,7 +287,7 @@ class NullFilter(Filter):
         self.data = {}
         self.session_displayed = False
         self.participants: Optional[Array[ParticipantsData]] = None
-        send_to_ollama("RI: Engineer Confirm Readiness with the word 'Ready'.")   
+        #send_to_ollama_system("RI: Engineer Confirm Readiness with the word 'Ready'.")   
 
     def _get_driver_name(self, vehicle_index: int):
         participant = cast(Array[ParticipantsData],
