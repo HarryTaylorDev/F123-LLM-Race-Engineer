@@ -42,6 +42,7 @@ engineer_preamble = str(contents)
 from gtts import gTTS
 import os
 import playsound
+import time
 
 import requests
 import json
@@ -81,6 +82,7 @@ def send_to_ollama(events):
             tts = gTTS(text=to_speak, lang='en')
             filename = "temp_comms.mp3"
             tts.save(filename)
+            time.sleep(1)
             playsound.playsound(filename)
             os.remove(filename)
 
@@ -106,6 +108,7 @@ def send_to_ollama_system(events):
             tts = gTTS(text=to_speak, lang='en')
             filename = "temp_comms.mp3"
             tts.save(filename)
+            time.sleep(1)
             playsound.playsound(filename)
             os.remove(filename)
 
@@ -119,10 +122,11 @@ def listen():
     while True:
         s = socket.socket()
         port = 12345
-        s.connect(('127.0.0.1', port))   # Connect to the server on local computer
+        s.connect(('127.0.0.1', port))   # Connect to the server 
         message = s.recv(1024).decode('utf-8')
         print("COMMS (driver): ", message)
-        send_to_ollama(message)   # Receive data from the server 
+        if not globals()["recieving"]:
+            send_to_ollama(message)   # Receive data from the server 
         s.close()
 dc_thread = threading.Thread(target=listen)
 dc_thread.start()
