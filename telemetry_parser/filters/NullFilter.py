@@ -78,19 +78,16 @@ def send_to_ollama(events):
         if any(c.isalpha() for c in to_speak):
             to_type = "\nCOMMS (engineer): " + to_speak + "\n"
             logging.info(to_type)
-
             tts = gTTS(text=to_speak, lang='en')
             filename = "temp_comms.mp3"
             tts.save(filename)
             time.sleep(1)
             playsound.playsound(filename)
             os.remove(filename)
-
-            #issue - if a new sound tries to play before the old one is finnished it breaks, need solution
-
     except requests.RequestException as e:
         logging.info(f"Error sending events to Ollama: {e}")
     globals()["recieving"] = False
+    
 
 def send_to_ollama_system(events):
     globals()["recieving"] = True
@@ -104,18 +101,17 @@ def send_to_ollama_system(events):
         if any(c.isalpha() for c in to_speak):
             to_type = "\nCOMMS (systems): " + to_speak + "\n"
             logging.info(to_type)
-
             tts = gTTS(text=to_speak, lang='en')
             filename = "temp_comms.mp3"
             tts.save(filename)
             time.sleep(1)
             playsound.playsound(filename)
             os.remove(filename)
-
     except requests.RequestException as e:
         logging.info(f"Error sending events to Ollama: {e}")
     globals()["recieving"] = False
 
+# Driver Comms server connection and handling    -----------------------------------------------------------------------------
 import socket
 import threading
 def listen():
@@ -130,8 +126,6 @@ def listen():
         s.close()
 dc_thread = threading.Thread(target=listen)
 dc_thread.start()
-
-
 
 #-----------------------------------------------------------------------------------------------------------------------------
 
