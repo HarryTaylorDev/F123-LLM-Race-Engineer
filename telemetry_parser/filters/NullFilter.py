@@ -87,7 +87,7 @@ def send_to_ollama(events):
     except requests.RequestException as e:
         logging.info(f"Error sending events to Ollama: {e}")
     globals()["recieving"] = False
-    
+
 
 def send_to_ollama_system(events):
     globals()["recieving"] = True
@@ -122,7 +122,7 @@ def listen():
         message = s.recv(1024).decode('utf-8')
         print("COMMS (driver): ", message)
         if not globals()["recieving"]:
-            send_to_ollama(message)   # Receive data from the server 
+            send_to_ollama("DC: " + message)   # Receive data from the server 
         s.close()
 dc_thread = threading.Thread(target=listen)
 dc_thread.start()
